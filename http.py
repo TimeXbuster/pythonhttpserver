@@ -84,7 +84,7 @@ while True:			#this is a loop that tells to continue to keep the socket open oth
 		content= file.read()
 		file.close()
 
-		response = 'HTTP/1.0 200 OK\n\nHello World\n\n' + content
+		response = 'HTTP/1.0 200 OK\n\n' + content
 	except FileNotFoundError:
 		response = 'HTTP/1.0 404 NOT FOUND\n\n File not found\n\nPlease access a Valid file'
 	#This is an error exception catching in case somebody tries to access a file not present
