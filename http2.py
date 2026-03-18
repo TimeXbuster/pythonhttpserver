@@ -1,8 +1,9 @@
 
 import socket
+import json
 
-SERVER_HOST = '0.0.0.0' #This means All IP adresses are allowed
-SERVER_PORT = 8000 #the computer is listening on port 8000
+SERVER_HOST = '0.0.0.0' 
+SERVER_PORT = 8000 
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -15,7 +16,7 @@ server_socket.listen(1)
 
 print('Listening on Port %s ....' % SERVER_PORT)
 
-while True:         #this is a loop that tells to continue to keep the socket open otherwise it would be closed after just one connection but this keeps it going (one connection connects it does its work disconnects then next one can connect)
+while True:
 
     client_connection,client_address = server_socket.accept()
 
@@ -32,11 +33,41 @@ while True:         #this is a loop that tells to continue to keep the socket op
     method,path = parts[0],parts[1]
 
     if path == '/health':
-        response_b = {'Status:','Alive'}
+        response_b = '{"Status": "Alive"}'
         response = ('HTTP/1.0 200 OK\n'
             'Content-Type:application/json\n'
             f"Content-Length: {len(response_b)}\n"
             f"{response_b}")
+    elif path == '/info':
+        response_b = '{"status": "alive"}'
+        response = ("HTTP/1.0 200 OK\n"
+            "Content-Type:application/json\n"
+            f"Content_Length:{len(response_b)}\n"
+            f"{response_b}")
+    elif path == '/task' and method == 'POST':
+        try:
+            body = request.split('\r\n\r\n')[1]
+            data = json.loads(body)
+            task = data.get("task")
+            value = data.get("value")
+            match(task):
+                case "square":
+                    result = value*value
+                case "double":
+                    result = value*2
+                case _:
+                    result = "unknown task"
+            response_b = json.dumps({"result":result})
+            response = ("HTTP/1.0 200 OK\n"
+                "Content-Type: application/json\n"
+                f"Content-Length: {len(response_b)}"
+                f"{response_b}")
+        except Exception as e:
+        response_b = json.dumps({"error": str(e)})
+        response = (
+            "HTTP/1.0 400 Bad Request\n\n"
+            f"{response_b}"
+        )
     else:
         if path == '/':
             filename = 'index.html'
