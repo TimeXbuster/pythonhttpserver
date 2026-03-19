@@ -3,10 +3,10 @@ import socket
 import json
 
 SERVER_HOST = '0.0.0.0' 
-SERVER_PORT = 8000 
+
+SERVER_PORT = int(input("Enter port: "))
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
@@ -29,20 +29,20 @@ while True:
     parts = headers[0].split()
     if len(parts)<2:
         client_connection.close()
-        return
+        continue
     method,path = parts[0],parts[1]
 
     if path == '/health':
         response_b = '{"Status": "Alive"}'
-        response = ('HTTP/1.0 200 OK\n'
-            'Content-Type:application/json\n'
-            f"Content-Length: {len(response_b)}\n"
+        response = ('HTTP/1.0 200 OK\r\n'
+            'Content-Type:application/json\r\n'
+            f"Content-Length: {len(response_b)}\r\n\r\n"
             f"{response_b}")
     elif path == '/info':
         response_b = '{"status": "alive"}'
-        response = ("HTTP/1.0 200 OK\n"
-            "Content-Type:application/json\n"
-            f"Content_Length:{len(response_b)}\n"
+        response = ("HTTP/1.0 200 OK\r\n"
+            "Content-Type:application/json\r\n"
+            f"Content-Length:{len(response_b)}\r\n\r\n"
             f"{response_b}")
     elif path == '/task' and method == 'POST':
         try:
@@ -58,16 +58,16 @@ while True:
                 case _:
                     result = "unknown task"
             response_b = json.dumps({"result":result})
-            response = ("HTTP/1.0 200 OK\n"
-                "Content-Type: application/json\n"
-                f"Content-Length: {len(response_b)}"
+            response = ("HTTP/1.0 200 OK\r\n"
+                "Content-Type: application/json\r\n"
+                f"Content-Length: {len(response_b)}\r\n\r\n"
                 f"{response_b}")
         except Exception as e:
-        response_b = json.dumps({"error": str(e)})
-        response = (
-            "HTTP/1.0 400 Bad Request\n\n"
-            f"{response_b}"
-        )
+            response_b = json.dumps({"error": str(e)})
+            response = (
+                "HTTP/1.0 400 Bad Request\r\n\r\n"
+                f"{response_b}"
+            )
     else:
         if path == '/':
             filename = 'index.html'
@@ -78,9 +78,9 @@ while True:
             content= file.read()
             file.close()
 
-            response = 'HTTP/1.0 200 OK\n\n' + content
+            response = 'HTTP/1.0 200 OK\r\n\r\n' + content
         except FileNotFoundError:
-            response = 'HTTP/1.0 404 NOT FOUND\n\n File not found\n\nPlease access a Valid file'
+            response = 'HTTP/1.0 404 NOT FOUND\r\n\r\n File not found\r\n\r\nPlease access a Valid file'
 
     
     client_connection.sendall(response.encode())
